@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard | Lost & Found</title>
+
+  <!-- Tailwind -->
+  <script>
+    tailwind = window.tailwind || {};
+    tailwind.config = {
+      darkMode: "class",
+      theme: { extend: { colors: { accent: "#7c3aed" } } }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Modal Layer Fix -->
+  <style>
+    #binModal .modal-overlay { position: absolute; inset: 0; z-index: 20; }
+    #binModal .modal-content { position: relative; z-index: 30; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100">
+
+<!-- UTILS -->
+<script src="utils.js"></script>
+
+<!-- HEADER -->
+<header class="sticky top-0 bg-black/30 backdrop-blur border-b border-white/10 z-40">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+
+    <div>
+      <h1 class="text-xl font-extrabold">Admin Dashboard</h1>
+      <div id="adminUser" class="text-sm text-slate-300">Loading...</div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button id="themeToggle" class="px-3 py-1 bg-white/5 rounded">
+        <span id="themeIcon">🌙</span>
+      </button>
+
+      <a href="dashboard.html" class="px-3 py-1 bg-white/5 rounded">User Dashboard</a>
+      <button id="logoutBtn" class="px-3 py-1 bg-red-600/20 rounded">Logout</button>
+    </div>
+
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+
+  <!-- LEFT SECTION -->
+  <section class="col-span-2 bg-slate-900/40 p-5 rounded-2xl border border-white/10">
+
+    <!-- STATS -->
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="bg-slate-800/60 p-4 rounded-xl border border-white/10">
+        <div class="text-sm text-slate-400">Total Items</div>
+        <div id="statTotal" class="text-2xl font-bold mt-1">0</div>
+      </div>
+
+      <div class="bg-slate-800/60 p-4 rounded-xl border border-white/10">
+        <div class="text-sm text-slate-400">Users</div>
+        <div id="statUsers" class="text-2xl font-bold mt-1">0</div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-slate-800/60 p-4 rounded-xl border border-white/10">
+        <h3 class="font-semibold mb-2">Lost vs Found</h3>
+        <canvas id="chartType"></canvas>
+      </div>
+
+      <div class="bg-slate-800/60 p-4 rounded-xl border border-white/10">
+        <h3 class="font-semibold mb-2">Resolved vs Unresolved</h3>
+        <canvas id="chartResolved"></canvas>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="mt-6 bg-slate-800/60 p-4 rounded-xl border border-white/10">
+      <h3 class="font-semibold mb-2">Items Posted Per Day</h3>
+      <canvas id="chartPerDay"></canvas>
+    </div>
+
+    <div class="mt-6 bg-slate-800/60 p-4 rounded-xl border border-white/10">
+      <h3 class="font-semibold mb-2">User Signups Per Day</h3>
+      <canvas id="chartUsers"></canvas>
+    </div>
+
+    <div class="mt-6 bg-slate-800/60 p-4 rounded-xl border border-white/10">
+      <h3 class="font-semibold mb-2">Items by Category</h3>
+      <canvas id="chartCategory"></canvas>
+    </div>
+
+  </section>
+
+  <!-- RIGHT PANEL -->
+  <aside class="bg-slate-900/40 p-5 rounded-2xl border border-white/10">
+    <h3 class="font-semibold mb-3">Admin Tools</h3>
+
+    <div class="space-y-2">
+      <button id="downloadJson" class="w-full py-2 bg-slate-800/50 rounded">Download JSON</button>
+      <button id="exportCsv" class="w-full py-2 bg-slate-800/50 rounded">Export CSV</button>
+      <button id="clearAll" class="w-full py-2 bg-red-600/30 rounded">Clear All Items</button>
+      <button id="openBin" class="w-full py-2 bg-yellow-600/30 rounded">Open Recycle Bin</button>
+      <button id="changePass" class="w-full py-2 bg-slate-800/50 rounded">Change Admin Password</button>
+    </div>
+
+    <hr class="my-4 border-white/10" />
+
+    <h4 class="font-semibold mb-2">Activity Logs</h4>
+    <div id="logs" class="text-xs max-h-64 overflow-auto space-y-2"></div>
+  </aside>
+
+</main>
+
+<!-- RECYCLE BIN MODAL -->
+<div id="binModal" class="fixed inset-0 hidden items-start justify-center p-6 z-50">
+
+  <div class="modal-overlay bg-black/60 backdrop-blur-sm"></div>
+
+  <div class="modal-content bg-slate-900/70 border border-white/10 rounded-2xl p-6 max-w-3xl w-full">
+
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold">Recycle Bin</h3>
+      <button id="closeBin" class="px-3 py-1 bg-slate-700 rounded">Close</button>
+    </div>
+
+    <div id="binList" class="space-y-3 max-h-72 overflow-auto"></div>
+
+  </div>
+</div>
+
+<!-- APP LOGIC -->
+<script src="app.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* AUTH CHECK */
+  const session = LF.getSession();
+  if (!session || session.role !== "admin") {
+    alert("Admins only — redirecting");
+    location.href = "login.html";
+    return;
+  }
+  document.getElementById("adminUser").textContent =
+    `Signed in as ${session.user}`;
+
+  document.getElementById("logoutBtn").onclick = () => {
+    LF.clearSession();
+    location.href = "login.html";
+  };
+
+  /* MODAL */
+  const binModal = document.getElementById("binModal");
+  const closeBin = document.getElementById("closeBin");
+  const openBin = document.getElementById("openBin");
+
+  openBin.onclick = () => {
+    loadDeletedItems();
+    binModal.classList.remove("hidden");
+    binModal.style.display = "flex";
+  };
+
+  closeBin.onclick = () => {
+    binModal.classList.add("hidden");
+    binModal.style.display = "none";
+  };
+
+  binModal.addEventListener("click", (e) => {
+    if (e.target.classList.contains("modal-overlay")) {
+      binModal.classList.add("hidden");
+      binModal.style.display = "none";
+    }
+  });
+
+  /* STATS */
+  function refreshStats() {
+    document.getElementById("statTotal").textContent =
+      LF.readItems().filter(i => !i.deleted).length;
+
+    document.getElementById("statUsers").textContent =
+      LF.readUsers().length;
+  }
+
+  /* LOGS */
+  function renderLogs() {
+    const logs = LF.readLogs().slice().reverse();
+    const box = document.getElementById("logs");
+    box.innerHTML = "";
+
+    logs.slice(0, 100).forEach(l => {
+      const row = document.createElement("div");
+      row.className = "p-2 bg-slate-800/50 rounded text-xs";
+      row.textContent =
+        `${new Date(l.at).toLocaleString()} — ${l.type} — ${JSON.stringify(l.meta)}`;
+      box.appendChild(row);
+    });
+  }
+
+  /* CHARTS */
+  let chartType, chartResolved, chartPerDay, chartUsers, chartCategory;
+
+  function renderCharts() {
+    const type = LF.analytics.countByType();
+    const resolved = LF.analytics.resolvedSummary();
+    const perDay = LF.analytics.itemsPerDay();
+    const signup = LF.analytics.userSignupsPerDay();
+    const cat = LF.analytics.byCategory();
+
+    /* Lost vs Found */
+    const ctx1 = document.getElementById("chartType").getContext("2d");
+    chartType?.destroy();
+    chartType = new Chart(ctx1, {
+      type: "pie",
+      data: { labels: Object.keys(type), datasets: [{ data: Object.values(type) }] }
+    });
+
+    /* Resolved vs Unresolved */
+    const ctx2 = document.getElementById("chartResolved").getContext("2d");
+    chartResolved?.destroy();
+    chartResolved = new Chart(ctx2, {
+      type: "doughnut",
+      data: { labels: ["Resolved","Unresolved"], datasets: [{ data: [resolved.resolved, resolved.unresolved] }] }
+    });
+
+    /* Items per day */
+    const days = Object.keys(perDay).sort();
+    const ctx3 = document.getElementById("chartPerDay").getContext("2d");
+    chartPerDay?.destroy();
+    chartPerDay = new Chart(ctx3, {
+      type: "bar",
+      data: { labels: days, datasets: [{ label: "Items", data: days.map(d => perDay[d] || 0) }] }
+    });
+
+    /* Signup */
+    const sdays = Object.keys(signup).sort();
+    const ctx4 = document.getElementById("chartUsers").getContext("2d");
+    chartUsers?.destroy();
+    chartUsers = new Chart(ctx4, {
+      type: "line",
+      data: { labels: sdays, datasets: [{ label: "Signups", data: sdays.map(d => signup[d] || 0), fill: true }] }
+    });
+
+    /* Category */
+    const cats = Object.keys(cat);
+    const ctx5 = document.getElementById("chartCategory").getContext("2d");
+    chartCategory?.destroy();
+    chartCategory = new Chart(ctx5, {
+      type: "bar",
+      data: { labels: cats, datasets: [{ label: "Items", data: cats.map(c => cat[c] || 0) }] },
+      options: { indexAxis: "y" }
+    });
+  }
+
+  /* RECYCLE BIN */
+  function loadDeletedItems() {
+    const list = document.getElementById("binList");
+    const deleted = LF.readDeleted().slice().reverse();
+    list.innerHTML = "";
+
+    if (!deleted.length) {
+      list.innerHTML = `<div class="text-slate-400">No deleted items</div>`;
+      return;
+    }
+
+    deleted.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "flex gap-3 items-start bg-slate-800/50 p-3 rounded border border-white/10";
+
+      row.innerHTML = `
+        <div class="w-16 h-16 rounded overflow-hidden">
+          <img src="${item.photo || 'https://via.placeholder.com/160'}" class="w-full h-full object-cover"/>
+        </div>
+
+        <div class="flex-1">
+          <div class="font-semibold">${item.title}</div>
+          <div class="text-xs text-slate-400">Deleted: ${new Date(item.deletedAt).toLocaleString()}</div>
+
+          <div class="mt-2 flex gap-2">
+            <button class="px-2 py-1 bg-green-600/20 rounded restoreBtn">Restore</button>
+            <button class="px-2 py-1 bg-red-600/20 rounded permBtn">Delete Forever</button>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(row);
+
+      row.querySelector(".restoreBtn").onclick = () => {
+        let ds = LF.readDeleted().filter(d => d.id !== item.id);
+        LF.writeDeleted(ds);
+
+        let items = LF.readItems();
+        const i = items.findIndex(x => x.id === item.id);
+        if (i !== -1) items[i].deleted = false;
+        else items.push({ ...item, deleted: false });
+
+        LF.writeItems(items);
+        LF.log("restore", { id: item.id });
+
+        refreshAll();
+        loadDeletedItems();
+      };
+
+      row.querySelector(".permBtn").onclick = () => {
+        const p = prompt("Enter admin password:");
+        if (p !== LF.getAdminPass()) return alert("Wrong password!");
+
+        let ds = LF.readDeleted().filter(d => d.id !== item.id);
+        LF.writeDeleted(ds);
+        LF.log("delete-perm-bin", { id: item.id });
+
+        refreshAll();
+        loadDeletedItems();
+      };
+    });
+  }
+
+  /* DATA REFRESH */
+  function refreshAll() {
+    refreshStats();
+    renderCharts();
+    renderLogs();
+  }
+
+  refreshAll();
+
+  /* EXPORT JSON */
+  document.getElementById("downloadJson").onclick = () => {
+    const payload = {
+      items: LF.readItems(),
+      deleted: LF.readDeleted(),
+      users: LF.readUsers(),
+      logs: LF.readLogs(),
+      exportedAt: Date.now()
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "lost-found-backup.json";
+    a.click();
+  };
+
+  /* EXPORT CSV */
+  document.getElementById("exportCsv").onclick = () => {
+    const items = LF.readItems();
+    if (!items.length) return alert("No items to export.");
+
+    const keys = ["id","type","title","date","location","category","description","contact","createdBy","createdAt","resolved","deleted"];
+
+    const csv = [
+      keys.join(","),
+      ...items.map(it => keys.map(k => `"${String(it[k] ?? "").replace(/"/g,'""')}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "lost-found-items.csv";
+    a.click();
+  };
+
+  /* CLEAR ALL */
+  document.getElementById("clearAll").onclick = () => {
+    const pw = prompt("Enter admin password:");
+    if (pw !== LF.getAdminPass()) return alert("Wrong password!");
+
+    if (!confirm("Delete ALL items and logs?")) return;
+
+    LF.writeItems([]);
+    LF.writeDeleted([]);
+    localStorage.removeItem("lf-logs");
+    LF.log("clear-all");
+
+    refreshAll();
+    alert("All data cleared.");
+  };
+
+  /* CHANGE ADMIN PASS */
+  document.getElementById("changePass").onclick = () => {
+    const p = prompt("New admin password:");
+    if (!p) return;
+
+    LF.setAdminPass(p);
+    alert("Admin password updated.");
+  };
+
+});
+</script>
+
+</body>
+</html>
