@@ -1,0 +1,12 @@
+# Netlify redirects file for Lost & Found application
+
+# Serve files directly if they exist
+/login.html /login.html 200
+/signup.html /signup.html 200
+/dashboard.html /dashboard.html 200
+/admin-dashboard.html /admin-dashboard.html 200
+/app.js /app.js 200
+/utils.js /utils.js 200
+
+# Default redirect to index.html for root
+/ /index.html 200
